@@ -2,11 +2,8 @@ package org.usfirst.frc.team1515.robot.commands;
 
 import java.io.*;
 import java.net.URL;
+import java.util.logging.ErrorManager;
 
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSource;
-import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.usfirst.frc.team1515.robot.Robot;
@@ -14,22 +11,25 @@ import org.usfirst.frc.team1515.robot.Robot;
 public class Align extends Command {
 	
 	static String url = "";
-	static final double MIN_SPEED = 0.09;
+	static final double MIN_SPEED = 0.1;
+	static final double MIN_ERROR = 0.3;
+	static final int ERROR_INCREMENT_FINISH = 2;
 	
-	static final double SPEED = 0.3;
+	static final double p = 0.01;
+	static final double i = 0.000000;
+	
 	double targetAngle;
 	double gyroStartAngle;
 	
-	public double p = 0.01;
-	public double i = 0.000005;
-	public double d = 0;
-	public double errorSum;
+	double errorSum;
+	double lastError = 0;
+	int errorIncrement = 0;
 	
     public Align() {
 //    	try {
 			//BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
 			//targetAngle = Integer.parseInt(reader.readLine());
-    		targetAngle = 90;
+    		targetAngle = -5;
 //		} catch (IOException e) {
 	//		e.printStackTrace();
 		//}
@@ -39,6 +39,8 @@ public class Align extends Command {
 
     protected void initialize() {
 		gyroStartAngle = Robot.gyro.getAngle();
+		lastError = 0;
+		errorIncrement = 0;
     }
 
     protected void execute() {
@@ -52,7 +54,14 @@ public class Align extends Command {
     		speed = Math.signum(speed) * MIN_SPEED;
     	}
     	Robot.driveTrain.setSpeeds(-speed, speed);
-    	return Math.abs(error) < 1 && Math.abs(Robot.gyro.getRate()) < 25;
+    	SmartDashboard.putNumber("gyro", Robot.gyro.getAngle());
+    	SmartDashboard.putNumber("error", error);
+    	SmartDashboard.putNumber("errorsum", errorSum);
+    	if (Math.abs(error) <= MIN_ERROR && lastError > MIN_ERROR) {
+    		errorIncrement++;
+    	}
+    	lastError = error;
+    	return errorIncrement >= ERROR_INCREMENT_FINISH;
     }
 
     protected void end() {
@@ -63,31 +72,4 @@ public class Align extends Command {
     	end();
     }
     
-    private class Source implements PIDSource {
-
-		@Override
-		public void setPIDSourceType(PIDSourceType pidSource) {
-			
-		}
-
-		@Override
-		public PIDSourceType getPIDSourceType() {
-			return PIDSourceType.kDisplacement;
-		}
-
-		@Override
-		public double pidGet() {
-			return targetAngle - (Robot.gyro.getAngle() - gyroStartAngle);
-		}
-    	
-    }
-    
-    private class Output implements PIDOutput {
-
-		@Override
-		public void pidWrite(double output) {
-			Robot.driveTrain.setSpeeds(-output, output); // this was wrong
-		}
-    	
-    }
 }
