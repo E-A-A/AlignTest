@@ -1,17 +1,17 @@
 package org.usfirst.frc.team1515.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.AnalogInput;
 
 public class EncoderWrapper {
 
-	Encoder encoder;
+	AnalogInput input;
 	int lastValue;
 	int value;
 	
-	final int MAX_TICKS = 4096;
+	final int MAX_TICKS = 3900;
 	
-	public EncoderWrapper(Encoder encoder) {
-		this.encoder = encoder;
+	public EncoderWrapper() {
+		input = new AnalogInput(0);
 		lastValue = 0;
 	}
 	
@@ -20,15 +20,17 @@ public class EncoderWrapper {
 	}
 	
 	public void update() {
-		double encoderValue = encoder.get();
-		if ((Math.abs(lastValue) - encoderValue) > MAX_TICKS / 2) {
-			if (encoderValue < MAX_TICKS /2 ) {
+		int encoderValue = input.getAverageValue();
+		if (Math.abs((Math.abs(lastValue) - encoderValue)) > MAX_TICKS / 2) {
+			if (encoderValue < MAX_TICKS / 2 ) {
 				value += MAX_TICKS - lastValue + encoderValue;
 			} else {
 				value += MAX_TICKS - encoderValue + lastValue; 
 			}
+		} else if (lastValue != encoderValue) {
+			value += (encoderValue - lastValue);
 		}
-		lastValue = encoder.get();
+		lastValue = encoderValue;
 	}
 	
 }

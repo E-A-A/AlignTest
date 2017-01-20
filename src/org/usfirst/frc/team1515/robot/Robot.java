@@ -2,8 +2,10 @@
 package org.usfirst.frc.team1515.robot;
 
 import org.usfirst.frc.team1515.robot.subsystems.DriveTrain;
+import org.usfirst.frc.team1515.robot.subsystems.EncoderWrapper;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.command.Command;
@@ -20,7 +22,8 @@ public class Robot extends IterativeRobot {
 	public static Joystick joystick = new Joystick(0);
 	public static final Gyro gyro = new ADXRS450_Gyro();
 	public static final DriveTrain driveTrain = new DriveTrain();
-
+	public static final EncoderWrapper encoder = new EncoderWrapper();
+	
 	@Override
 	public void robotInit() {
 		oi = new OI();
@@ -56,7 +59,8 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		Scheduler.getInstance().run();
 		SmartDashboard.putNumber("gyro", gyro.getRate());
-		
+		encoder.update();
+		SmartDashboard.putNumber("encoder", encoder.get());
 	}
 
 	@Override
