@@ -1,10 +1,12 @@
 
 package org.usfirst.frc.team1515.robot;
 
+
 import org.usfirst.frc.team1515.robot.subsystems.DriveTrain;
 import org.usfirst.frc.team1515.robot.subsystems.EncoderWrapper;
 
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Relay;
@@ -21,6 +23,7 @@ public class Robot extends IterativeRobot {
 	public static final Gyro gyro = new ADXRS450_Gyro();
 	public static final DriveTrain driveTrain = new DriveTrain();
 	public static final EncoderWrapper encoder = new EncoderWrapper();
+	public static final DigitalInput limitSwitch = new DigitalInput(0);
 	
 	Relay relay = new Relay(0);
 	
@@ -68,6 +71,7 @@ public class Robot extends IterativeRobot {
 			toggle = !toggle;
 			time = System.currentTimeMillis();
 		}
+		System.out.println(limitSwitch.get());
 	}
 
 	@Override
