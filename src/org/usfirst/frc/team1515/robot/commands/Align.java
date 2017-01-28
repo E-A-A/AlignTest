@@ -16,9 +16,12 @@ public class Align extends Command {
 	static final double MIN_SPEED = 0.15;
 	static final double MIN_ERROR = 0.75;
 	static final int ERROR_INCREMENT_FINISH = 2;
-	static final double FORWARD_SPEED = .01;
+	static final double FORWARD_TURN_SPEED = .01;
+	static final double FORWARD_SPEED = .1;
+	static final int ITERATIONS = 2;
 	
-	static final double P = 0.01;
+	static final double PTURN = 0.01;
+	static final double PFORWARD = 0.0001;
 	static final double I = 0.00000;
 	//static final double D = 0.000001;
 	
@@ -29,6 +32,8 @@ public class Align extends Command {
 	double errorSum;
 	double lastError = 0;
 	int errorIncrement = 0;
+	int iterations = 0;
+	double p;
 	
     public Align() {
         requires(Robot.driveTrain);
@@ -37,14 +42,15 @@ public class Align extends Command {
     public void sendRequest() {
     	state = State.PENDING;
     	try {
-    		BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
-    		String res = reader.readLine();
-    		System.out.println(res);
-    		targetAngle = Double.parseDouble(res);
-//    		targetAngle = 30;
+//    		BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(url).openStream()));
+//    		String res = reader.readLine();
+//    		System.out.println(res);
+//    		targetAngle = Double.parseDouble(res);
+    		targetAngle = 5;
     		gyroStartAngle = Robot.gyro.getAngle();
     		lastError = 0;
     		state = State.SUCCESS;
+    		iterations++;
     	} catch (NumberFormatException ex) {
     		state = State.FAILURE;
     		System.out.println("No tape found.");
@@ -56,6 +62,8 @@ public class Align extends Command {
     }
 
     protected void initialize() {
+    	p = PTURN;
+    	iterations = 0;
     	errorIncrement = 0;
     	sendRequest();
     }
@@ -69,12 +77,12 @@ public class Align extends Command {
     	}
     	if (state == State.SUCCESS) {
     		double error = targetAngle - (Robot.gyro.getAngle() - gyroStartAngle);
-        	double speed = error * P  + errorSum * I;
+        	double speed = error * p  + errorSum * I;
         	errorSum += error;
         	if (Math.abs(speed) < MIN_SPEED) {
         		speed = Math.signum(speed) * MIN_SPEED;
         	}
-        	Robot.driveTrain.setSpeeds(-speed + FORWARD_SPEED, speed + FORWARD_SPEED);
+        	Robot.driveTrain.setSpeeds(-speed + FORWARD_TURN_SPEED, speed + FORWARD_TURN_SPEED);
         	SmartDashboard.putNumber("gyro", Robot.gyro.getAngle());
         	SmartDashboard.putNumber("error", error);
         	SmartDashboard.putNumber("errorsum", errorSum);
@@ -82,10 +90,14 @@ public class Align extends Command {
         		errorIncrement++;
         	}
         	lastError = error;
-        	if (errorIncrement == ERROR_INCREMENT_FINISH) {
-        		errorIncrement++;
-        		end();
-        		sendRequest();
+        	if (errorIncrement >= ERROR_INCREMENT_FINISH) {
+        		if (iterations < ITERATIONS) {
+	        		errorIncrement = 0;
+	        		end();
+	        		sendRequest();
+        		} else if (iterations >= ITERATIONS) {
+        			p = PFORWARD;
+        		}
         	//	return true;
         	}
     	}

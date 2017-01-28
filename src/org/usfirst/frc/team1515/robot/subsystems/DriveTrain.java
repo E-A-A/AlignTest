@@ -45,9 +45,12 @@ public class DriveTrain extends Subsystem {
 		double x = Math.abs(twist);
 		double a = ROTATE_SIDE;
 		double b = ROTATE_CORNER;
-		
+		 
 		double left = a * x + y * (1 - a * x);
 		double right = y * (1 + (a + b - 1) * x) - a * x;
+//		double length = Math.sqrt(x * x + y * y) / Math.max(Math.abs(x), Math.abs(y));
+//		double left = (x + y) / length;
+//		double right = (y - x) / length;
 		if (forward < 0) {
 			left *= -1;
 			right *= -1;
