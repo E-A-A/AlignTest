@@ -16,8 +16,8 @@ public class DriveTrain extends Subsystem {
 	private static final double DEAD_BAND = 0.15;
 		
 	public DriveTrain() {		
-		leftMotors = new MotorModule(23, 24);
-		rightMotors = new MotorModule(22, 21);
+		leftMotors = new MotorModule(1, 3);
+		rightMotors = new MotorModule(4, 2);
 	}
 	
 	public void setSpeeds(double left, double right) {
